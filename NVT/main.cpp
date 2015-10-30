@@ -8,10 +8,18 @@
 #include "Particle.hpp"
 #include "ExtVar.hpp"
 #include "Vector3D.hpp" 
+#include "Quantities.hpp"
 
 using namespace std;
 
 typedef ParticleGeneral<Vector3D> Particle;
+
+double CalculateTemperature(const vector<Particle>& p) {
+
+	const double K = CalculateKinEnergy(p);
+	return 2.0*K/(3.0*p.size());
+
+}
 
 vector<Vector3D> CalculateInteraction(const vector<Particle>& p, double box) {
 
@@ -72,6 +80,7 @@ void UpdateSystem(vector<Particle>& p, ExtVar& s, double dt, double box, double 
 	}
 	s.v = (p1 + p2)/s.m;
 	s.r += s.v*dt;
+
 	auto f = CalculateInteraction(p, box);
 	for (int i=0; i<n; i++) {
 		p[i].v += (f[i] - p[i].v*s.r)*dt;
@@ -82,9 +91,9 @@ void UpdateSystem(vector<Particle>& p, ExtVar& s, double dt, double box, double 
 
 int main() {
 
-	int nSideX = 3;
-	int nSideY = 3;
-	int nSideZ = 3;
+	int nSideX = 5;
+	int nSideY = 5;
+	int nSideZ = 5;
 	vector<Particle> p;
 	ExtVar s;
 	double box = 10.0;
@@ -101,6 +110,7 @@ int main() {
 	ofstream trans("trans.dat");
 	ofstream temp("temp.dat");
 	ofstream frict("friction.dat");
+	ofstream energy("energy.dat");
 
 	for (int step =0;step <5e6; step++) {
 		UpdateSystem(p, s, dt, box, temperature); 
@@ -111,17 +121,13 @@ int main() {
 				trans << a.r << endl;
 				v2+=a.SumVels2();
 			}
-			temp << step << " " << v2/(3*p.size()) << endl;
+			temp << step << " " << CalculateTemperature(p) << endl;
+			energy << step << " " << CalculateEnergy<Particle, Vector3D>(p,box) << endl;
 			frict << step << " " << s.r << endl;
 		}
 	}
 
 	ofstream fin("final.dat");
-	fin << p.size() << endl;
-	fin << s.r << " " << s.v  << " " << s.m << endl;
-	fin << temperature << endl;
-	fin << box << endl;
-	fin << endl;
 	for (auto a:p) {
 		fin << a.r << a.v << endl;
 	}	

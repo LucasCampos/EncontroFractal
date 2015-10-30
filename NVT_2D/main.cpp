@@ -8,10 +8,18 @@
 #include "Particle.hpp"
 #include "ExtVar.hpp"
 #include "Vector2D.hpp" 
+#include "Quantities.hpp"
 
 using namespace std;
 
 typedef ParticleGeneral<Vector2D> Particle;
+
+double CalculateTemperature(const vector<Particle>& p) {
+
+	const double K = CalculateKinEnergy(p);
+	return K/p.size();
+
+}
 
 vector<Vector2D> CalculateInteraction(const vector<Particle>& p, double box) {
 
@@ -103,6 +111,7 @@ int main() {
 	ofstream trans("trans.dat");
 	ofstream temp("temp.dat");
 	ofstream frict("friction.dat");
+	ofstream energy("energy.dat");
 
 	for (int step =0;step <5e6; step++) {
 		UpdateSystem(p, s, dt, box, temperature); 
@@ -113,7 +122,8 @@ int main() {
 				trans << a.r << endl;
 				v2+=a.SumVels2();
 			}
-			temp << step << " " << v2/(2*p.size()) << endl;
+			temp << step << " " << CalculateTemperature(p) << endl;
+			energy << step << " " << CalculateEnergy<Particle, Vector2D>(p,box) << endl;
 			frict << step << " " << s.r << endl;
 		}
 	}
