@@ -59,7 +59,7 @@ void InitializeSystem(vector<Particle>& p, ExtVar& s, double box, double tempera
 	for (int i=0; i<nSideX; i++) {
 		for (int j=0; j<nSideY; j++) {
 			p[idx].r = Vector2D(i*stepX,j*stepY) + centerer;
-			p[idx].v = Vector2D(rng.UniCentered(),rng.UniCentered())*sqrt(2*temperature);
+			p[idx].v = Vector2D();
 			/* p[idx].v = Vector2D(1.0, 1.0,1.0)*temperature; */
 			idx++;
 		}
@@ -99,7 +99,7 @@ int main() {
 	ExtVar s;
 	double box = 20.0;
 	double dt = 0.0001;
-	double temperature = 1.00;
+	double temperature = 5.00;
 
 	InitializeSystem(p,s,box, temperature, nSideX, nSideY);
 
