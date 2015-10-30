@@ -27,6 +27,7 @@ double CalculatePotEnergy(const std::vector<Particle>& p, double box) {
 			Ep += e;
 		}
 	}
+	return Ep;
 }
 
 template <class Particle, class Vector>
