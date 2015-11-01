@@ -70,7 +70,7 @@ void UpdateSystem(vector<Particle>& p, ExtVar& s, double dt, double box, double 
 
 	const int n = p.size();
 
-	double p1 = -2*n*temperature;
+	double p1 = -(2*n+1)*temperature;
 	double p2 = 0;
 	for (auto a:p) {
 		p2 += a.SumVels2();
