@@ -42,15 +42,11 @@ vector<Vector3D> CalculateInteraction(const vector<Particle>& p, double box) {
 	return forc;
 }
 
-void InitializeSystem(vector<Particle>& p, ExtVar& s, double box, double temperature, int nSideX, int nSideY, int nSideZ) {
+void InitializeSystem(vector<Particle>& p, double box, int nSideX, int nSideY, int nSideZ) {
 
 	int N=nSideX*nSideY*nSideZ;
 	p.resize(N);
 	RNG rng;
-
-	s.r = 0.0;
-	s.v = 0.0;
-	s.m = 1.0;
 
 	const Vector3D centerer = Vector3D(-0.5,-0.5, -0.5)*box;
 	const double stepX = box/nSideX;
@@ -61,29 +57,20 @@ void InitializeSystem(vector<Particle>& p, ExtVar& s, double box, double tempera
 		for (int j=0; j<nSideY; j++) {
 			for (int k=0; k<nSideZ; k++) {
 				p[idx].r = Vector3D(i*stepX,j*stepY,k*stepZ) + centerer;
-				p[idx].v = Vector3D();
-				/* p[idx].v = Vector3D(1.0, 1.0,1.0)*temperature; */
+				p[idx].v = Vector3D(rng.UniCentered(), rng.UniCentered(), rng.UniCentered());
 				idx++;
 			}
 		}
 	}
 }
 
-void UpdateSystem(vector<Particle>& p, ExtVar& s, double dt, double box, double temperature) {
+void UpdateSystem(vector<Particle>& p, double dt, double box) {
 
 	const int n = p.size();
 
-	double p1 = -(3*n+1)*temperature;
-	double p2 = 0;
-	for (auto a:p) {
-		p2 += a.SumVels2();
-	}
-	s.v = (p1 + p2)/s.m;
-	s.r += s.v*dt;
-
 	auto f = CalculateInteraction(p, box);
 	for (int i=0; i<n; i++) {
-		p[i].v += (f[i] - p[i].v*s.r)*dt;
+		p[i].v += f[i]*dt;
 		p[i].r = CorrectBox(box, p[i].r + p[i].v*dt);
 	}
 
@@ -95,12 +82,11 @@ int main() {
 	int nSideY = 5;
 	int nSideZ = 5;
 	vector<Particle> p;
-	ExtVar s;
+	ExtVar P;
 	double box = 10.0;
 	double dt = 0.0001;
-	double temperature = 5.00;
 
-	InitializeSystem(p,s,box, temperature, nSideX, nSideY, nSideZ);
+	InitializeSystem(p,box, nSideX, nSideY, nSideZ);
 
 	ofstream initial("initial.dat");
 	for (auto a:p) {
@@ -109,11 +95,10 @@ int main() {
 
 	ofstream trans("trans.dat");
 	ofstream temp("temp.dat");
-	ofstream frict("friction.dat");
 	ofstream energy("energy.dat");
 
 	for (int step =0;step <5e6; step++) {
-		UpdateSystem(p, s, dt, box, temperature); 
+		UpdateSystem(p, dt, box); 
 		if (step %2000 == 0) {
 			cout << step << endl;
 			double v2 =0;
@@ -123,7 +108,6 @@ int main() {
 			}
 			temp << step << " " << CalculateTemperature(p) << endl;
 			energy << step << " " << CalculateEnergy<Particle, Vector3D>(p,box) << endl;
-			frict << step << " " << s.r << endl;
 		}
 	}
 

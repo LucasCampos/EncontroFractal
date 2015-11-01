@@ -31,7 +31,7 @@ vector<Vector2D> CalculateInteraction(const vector<Particle>& p, double box) {
 			d = CorrectBox(box, d);
 			const double r2 = d.MagnitudeSquared();
 			const double r6_ = 1.0/(r2*r2*r2);
-			const double f = 12*(2.0*r6_*r6_ - r6_)/r2;
+			const double f = 24*(2.0*r6_*r6_ - r6_)/r2;
 			d *= f;
 
 			forc[i] += d;			
@@ -74,11 +74,11 @@ void UpdateSystem(vector<Particle>& p, double dt, double box) {
 
 int main() {
 
-	int nSideX = 2;
-	int nSideY = 1;
+	int nSideX = 3;
+	int nSideY = 3;
 	vector<Particle> p;
 	double box = 10.0;
-	double dt = 0.0001;
+	double dt = 1e-5;
 
 	InitializeSystem(p,box, nSideX, nSideY);
 

@@ -32,7 +32,7 @@ vector<Vector2D> CalculateInteraction(const vector<Particle>& p, double box) {
 			d = CorrectBox(box, d);
 			const double r2 = d.MagnitudeSquared();
 			const double r6_ = 1.0/(r2*r2*r2);
-			const double f = 12*(2.0*r6_*r6_ - r6_)/r2;
+			const double f = 24*(2.0*r6_*r6_ - r6_)/r2;
 			d *= f;
 
 			forc[i] += d;			
