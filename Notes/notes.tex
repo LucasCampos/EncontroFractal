@@ -1,0 +1,243 @@
+\documentclass[twoside, a4paper]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+
+\newcommand{\phiij}{\phi_{ij}}
+\newcommand{\del}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\deri}[2]{\frac{d #1}{d #2}}
+
+
+\begin{document}
+\title{Introdução à Dinâmica Molecular fora do NVE}
+\author{L. Q. Costa Campos}
+\date{2015-11-05}
+\maketitle
+
+\tableofcontents
+
+\clearpage
+
+\section{Objetivos}
+
+É comum em Dinâmica Molecular simularmos sistemas com energia constante, cujas equações de movimento são descritas diretamente pela Lei de Newton. Neste Encontro Fractal nós falaremos sobre como podemos simular sistemas que não o NVE. A saber, mostraremos o NPH, com número de partículas, pressão e entalpia constantes, o NVT, com volume e temperature constantes e o $\mu$VT, com potencial químico, volume e temperatura constantes.
+
+Começarei o encontro com uma breve introdução à dinâmica molecular no NVE, onde encontraremos também o algorítimo mais básico para resolução de EDOs computacionalmente, o método de Euler. Seguiremos então para os outros ensembles, onde mostraremos as EDOs que os simulam e mostraremos que tais equações de fato simulam tais ensembles. Faremos isso provando em cada caso que a função de partição de fato é a esperada.
+
+\subsection{Não-objetivos}
+
+É bom notar que esse encontro não será sobre computação em si. Não falaremos de algorítimos de simulação mais avançados nem sobre a programação em si. Para nossos objetivos, o método de Euler será o suficiente. Também não falaremos sobre nenhuma linguagem de programação em especial. 
+
+Entretanto, resultados computacionais serão apresentados. Esses programas estarão disponíveis no GitHub.
+
+\section{Dinâmica Molecular}
+
+O caso mais comum usado na lei de Newton equivale ao seguinte hamiltoniano:
+
+\begin{equation}
+	H = \sum_i^N \frac{p_i^2}{2m} + \sum_{i<j} \phi(q_{ij}),
+\end{equation}
+onde $p_i$ é o momento da partícula $i$ e $\phi$ é um potencial par-a-par, dependente somente do módulo da distância entre as partículas $i$ e $j$, dado por $q_{ij}$. Por economia de notação, vamos denotar $\phi(q_{ij})$ por $\phiij$. 
+
+Utilizando o formalismo hamiltoniano, veremos que 
+
+\begin{subequations}
+	\begin{align}
+	\deri{q_i}{t} &=  \del{H}{p_i} = \frac{p_i}{m} \\
+	\deri{p_i}{t} &= -\del{H}{q_i} = -\sum_i \del{\phiij}{q_i}.
+	\end{align}
+	\label{eq:Newton}
+\end{subequations}
+
+Estas serão em geral as equações que teremos que simular. Um potencial comum em aprendizado de dinâmica molecular é o de Lennard-Jones:
+
+\begin{equation}
+	\phi_{LJ}(\vec{r}_{ij}) = 4\epsilon\left[ \left(\frac{\sigma}{r_{ij}}\right)^{12} -  \left(\frac{\sigma}{r_{ij}}\right)^{6} \right].
+\end{equation}
+Ele será nosso potencial de escolha nas simulações.
+
+\subsection{Métodos de Euler}
+
+O método de Euler consiste em "deslimitar" as derivadas em Eq. \ref{eq:Newton}. De forma geral, faremos que $df \rightarrow \Delta f$ e  $dt \rightarrow \Delta t$. Na Eq. \ref{eq:Newton}a,
+
+\begin{eqnarray*}
+	\frac{\Delta q_i}{\Delta t} &=& \frac{p_i(t)}{m} \\
+	\Delta q_i &=& \frac{p_i(t)}{m} \Delta t \\
+	q_i(t+\Delta t) - q_i(t) &=& \frac{p_i(t)}{m} \Delta t \\
+	q_i(t+\Delta t) &=& q_i(t) + \frac{p_i(t)}{m} \Delta t.
+\end{eqnarray*}
+Fazendo a mesma operação para $\deri{p_i}{t}$, teremos
+
+\begin{subequations}
+	\begin{align}
+		p_i(t+\Delta t) &= p_i(t) -\sum_i \del{\phiij(t)}{q_i} \Delta t \\
+		q_i(t+\Delta t) &= q_i(t) + \frac{p_i(t)}{m} \Delta t
+	\end{align}
+	\label{eq:Euler_Simples}
+\end{subequations}
+
+Já quebrando minha promessa da página anterior, vamos falar de um algorítimo um pouco melhor que o do método de Euler. Se utilizamos as velocidades já atualizadas na Eq. \ref{eq:Euler_Simples}a, teremos o algorítimo de Euler-Cromer, que preserva a estrutura simplética do sistema, conservando a hamiltoniana melhor que Euler faria. Então o algorítimo usado nos programas-exemplo são as descritas na equação \ref{eq:Euler}.
+
+\begin{subequations}
+	\begin{align}
+		p_i(t+\Delta t) &= p_i(t) -\sum_i \del{\phiij(t)}{q_i} \Delta t \\
+		q_i(t+\Delta t) &= q_i(t) + \frac{p_i(t+\Delta t)}{m} \Delta t
+	\end{align}
+	\label{eq:Euler}
+\end{subequations}
+
+De forma alguma esse é o final da história para algorítimos para resolver EDOs computacionalmente. Aliás, a maioria das simulações sérias \emph{não} usam nem recomendam o uso do método de Euler. Mas novamente, para os nossos objetivos ele será bom o suficiente.
+
+\section{Cálculo de quantidades termodinâmicas em dinâmica molecular}
+
+Durante nossas simulações, precisaremos medir algumas quantidades: energia, temperatura e pressão. Para isso usaremos as seguintes fórmulas:
+
+\subsection{Energia}
+
+A energia será somente a soma da energia potencial, $E_p$ e a da cinética, $E_k$:
+
+\begin{equation}
+	E = E_p + E_k,
+\end{equation}
+com 
+
+\begin{subequations}
+	\begin{align}
+		E_k &= \sum_i  \frac{p_i^2}{2m} \\ 
+		E_p &= \sum_{i < j}  \phiij
+	\end{align}
+\end{subequations}
+
+\subsection{Temperatura}
+
+Podemos usar a lei de equipartição para obtermos a temperatura do sistema. 
+
+\begin{equation}
+	\frac{f}{2} k_B T = \left<E_k\right>
+\end{equation}
+onde $f$ é o número de graus de libertdade do sistema e $\left<E_k\right>$ a média da energia cinética.
+
+\subsection{Pressão}
+
+Finalmente, usamos o virial para encontrar a pressão:
+
+\begin{equation}
+	PV = NT + \frac{1}{d} \left<\sum_{i<j} \vec{r_{ij}} \cdot \vec{F}_{ij}\right>
+\end{equation}
+
+\section{Ensemble Canônico - NVT}
+
+Para simular essse ensemble, conectaremos um banho térmico ao sistema. O fator de acoplamento, $s$, será também uma variável dinâmica do sistema. A interação térmica entre o sistema o banho térmico será exprimido através de um reescalonamento da velocidade das partículas. Para isto, serão usados dois conjuntos de variáveis: As variáveis reais, com linha, $\vec{v_i}'$ e as variáveis virtuais, sem linha, $\vec{v_i}$. Elas estão conectadas por
+
+\begin{equation}
+	\vec{v_i} = \vec{v_i}/s
+\end{equation}
+enquanto as coordenadas se mantêm iguais. A mudança pode melhor ser entendida como um reescalonamento do tempo infinitesimal. Um resumo é:
+
+\begin{subequations}
+	\begin{align}
+		q_i' &= q_i \\
+		p_i' &= p_i/s \\
+		dt' &= dt/s
+	\end{align}
+\end{subequations}
+
+\subsection{Equação de movimento no espaço virtual}
+Postulamos o seguinte hamiltonino:
+
+\begin{equation}
+	H_{NVT} = \sum_i \frac{p_i^2}{2ms^2} + \sum_{i<j} \phiij + \frac{p_s^2}{2Q} + gT \ln s
+\end{equation}
+
+O que nos dá as seguintes equações de movimento
+
+\begin{subequations}
+	\begin{align}
+		\deri{q_i}{t} &= \frac{p_i}{ms^2}\\
+		\deri{s}{t} &= \frac{p_s}{Q}\\
+		\deri{p_i}{t} &= \sum_i \del{\phiij}{q_i} = F_i \\
+		\deri{p_s}{t} &= \frac{1}{s} \left[\sum_i \frac{p_i}{ms^2} - gT\right]
+	\end{align}
+\end{subequations}
+
+\subsection{Equação de movimento no espaço real}
+
+\subsubsection*{Coordenadas}
+
+\begin{equation}
+	\deri{q_i'}{t'} = \deri{q_i'}{(t/s)} = s \deri{q_i}{t} = \frac{p_i}{ms} = \frac{p_i'}{m}
+\end{equation}
+
+\subsubsection*{Coeficiente de acoplamento}
+
+\begin{equation}
+	\deri{s'}{t'} = \deri{s'}{(t/s)} = s \deri{s}{t} = s\frac{p_s}{Q}= s'^2\frac{p_s'}{Q}
+\end{equation}
+
+\subsubsection*{Momento}
+
+\begin{align}
+	\deri{p_i'}{t'} &= s \deri{}{(t/s)} \frac{p_i}{s} = s\left[\frac{1}{s}\deri{p_i}{t} - \frac{p_i}{s^2}\deri{s}{t}\right]\notag \\
+			&= \deri{p_i}{t} - \frac{p_i}{s}\deri{s}{t} = F_i - p_i' \deri{s}{(st)} = F_i - \frac{p_i'}{s}\frac{ds}{dt'}
+\end{align}
+
+\subsubsection*{Momento do acoplamento}
+
+\begin{align}
+	\deri{p_s'}{t'} &=  s \deri{}{t} \frac{p_s}{s} = s \left[ \frac{1}{s}\deri{p_s}{t} - \frac{p_s}{s^2}\deri{s}{t}\right] = 
+	  \deri{p_s}{t} - \frac{p_s}{s}\deri{s}{t} \notag \\
+	  &= \frac{1}{s} \left[ \sum_i \frac{p_i}{2ms^2} - gT \right] - \frac{p_s}{s}\deri{s}{t} \notag \\
+	  &= \frac{1}{s} \left[ \sum_i \frac{p_i}{2ms^2} - gT \right] - \frac{p_s}{s}\deri{s}{(st')} \notag \\
+	  &= \frac{1}{s} \left[ \sum_i \frac{p_i}{2ms^2} - gT \right] - \frac{p_s}{s^2}\deri{s}{t'} \notag \\
+	  &= \frac{1}{s} \left[ \sum_i \frac{p_i}{2ms^2} - gT \right] - \frac{p_s'}{s}\deri{s}{t'} \notag \\
+	  &= \frac{1}{s} \left[ \sum_i \frac{p_i}{2ms^2} - gT- p_s'\deri{s}{t'} \right]  
+\end{align}
+
+\subsection{Redefinição da fricção}
+
+Podemos definir a quantidade $\zeta$, de forma que 
+
+\begin{equation}
+	\zeta = \ln s
+\end{equation}
+Com as seguintes propriedades
+
+\begin{subequations}
+\begin{align}
+	\deri{\zeta}{t} &= \frac{1}{s}\deri{s}{t}\\
+	\deri{\zeta}{t'} &= \frac{1}{s}\deri{s}{t'} \equiv \dot{\zeta}
+\end{align}
+\end{subequations}
+Aplicando as propriedades de $\zeta$ às equações de movimento,
+
+\begin{subequations}
+\begin{align}
+	\deri{q_i'}{t'} &= \frac{p_i'}{m} \\
+	\deri{p_i'}{t'} &= F_i - p_i' \dot{\zeta}
+\end{align}
+\end{subequations}
+Ainda precisamos da evolução de $\dot{\zeta}$. Para isto, destrincharemos ainda um pouco tal quantidade
+
+\begin{equation}
+	\deri{\zeta}{t'} = \frac{1}{s}\deri{s}{t'} = \deri{s}{(st')} = \deri{s}{t} = \frac{p_s}{Q} = s \frac{p_s'}{Q}
+\end{equation}
+Derivando em $t'$,
+
+\begin{align}
+	Q \deri{\dot{\zeta}}{t'} =& s \deri{p_s'}{t'} + p_s' \deri{s}{t'} \notag \\
+		=& s \frac{1}{s} \left[ \sum_i \frac{p_i'^2}{m} -gT -p_s' \deri{s}{t'}\right] + p_s' \deri{s}{t'} \notag \\
+		=& \sum_i \frac{p_i'^2}{m} -gT -p_s' \deri{s}{t'} + p_s' \deri{s}{t'} \notag \\
+		=& \sum_i \frac{p_i'^2}{m} - gT 
+\end{align}
+Coletando todas as equações num lugar só,
+
+\begin{align}
+	\deri{q_i'}{t'} &= \frac{p_i'}{m} \\
+	\deri{p_i'}{t'} &= F_i - p_i' \dot{\zeta} \\
+	\deri{\dot{\zeta}}{t'} &=  \frac{1}{Q} \left[\sum_i \frac{p_i'^2}{m} - gT\right] 
+\end{align}
+\end{document}
