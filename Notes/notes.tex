@@ -1,4 +1,4 @@
-\documentclass[twoside, a4paper]{article}
+\documentclass[twoside, a4paper]{scrartcl}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
@@ -13,7 +13,8 @@
 
 
 \begin{document}
-\title{Introdução à Dinâmica Molecular fora do NVE}
+\title{Ensembles Termodinâmicos em Dinâmica Molecular}
+\subtitle{Simulações por métodos de feedback}
 \author{L. Q. Costa Campos}
 \date{2015-11-05}
 \maketitle
@@ -131,10 +132,10 @@ Finalmente, usamos o virial para encontrar a pressão:
 
 \section{Ensemble Canônico - NVT}
 
-Para simular essse ensemble, conectaremos um banho térmico ao sistema. O fator de acoplamento, $s$, será também uma variável dinâmica do sistema. A interação térmica entre o sistema o banho térmico será exprimido através de um reescalonamento da velocidade das partículas. Para isto, serão usados dois conjuntos de variáveis: As variáveis reais, com linha, $\vec{v_i}'$ e as variáveis virtuais, sem linha, $\vec{v_i}$. Elas estão conectadas por
+Para simular essse ensemble, conectaremos um banho térmico ao sistema. O fator de acoplamento, $s$, será também uma variável dinâmica do sistema. A interação térmica entre o sistema o banho térmico será exprimido através de um reescalonamento da velocidade das partículas. Para isto, serão usados dois conjuntos de variáveis: As variáveis reais, com linha, $\vec{v_i'}$ e as variáveis virtuais, sem linha, $\vec{v_i}$. Elas estão conectadas por
 
 \begin{equation}
-	\vec{v_i}' = \vec{v_i}/s
+	\vec{v_i'} = \vec{v_i}/s
 \end{equation}
 enquanto as coordenadas se mantêm iguais. A mudança pode melhor ser entendida como um reescalonamento do tempo infinitesimal. Um resumo é:
 
@@ -256,17 +257,17 @@ no espaço de fase. Nosso caso não será diferente. Só temos que lembrar que $
 onde $H_0 = \sum_i p_i^2/2m + \sum_{i<j} \phiij$, $\vec{q} = (q_1,..., q_3N)$ e $\vec{p} = (p_1,..., p_3N)$. Ignoramos também um pré-fator de $1/(N!h^{3N})$. Vamos agora fazer a integração nas variáveis reais. O diferencial será
 
 \begin{equation}
-	d\vec{p} d\vec{q} =s^{3N} d\vec{p}' d\vec{q}',
+	d\vec{p} d\vec{q} =s^{3N} d\vec{p'} d\vec{q'},
 \end{equation}
 o que nos leva a 
 
 \begin{equation}
-	Z = \int dp_s \int ds \int d\vec{p}' \int d\vec{q}' s^{3N}\delta\left[H_0(\vec{p}', \vec{q}') + \frac{p_s^2}{2Q} + gT \ln s -E \right].
+	Z = \int dp_s \int ds \int d\vec{p'} \int d\vec{q'} s^{3N}\delta\left[H_0(\vec{p'}, \vec{q'}) + \frac{p_s^2}{2Q} + gT \ln s -E \right].
 \end{equation}
 
-Vamos definir a função de s $f(s) = H_0(\vec{p}', \vec{q}') + \frac{p_s^2}{2Q} + gT \ln s -E$. Modificamos então $Z$ para
+Vamos definir a função de s $f(s) = H_0(\vec{p'}, \vec{q'}) + \frac{p_s^2}{2Q} + gT \ln s -E$. Modificamos então $Z$ para
 \begin{equation}
-	Z = \int dp_s \int ds \int d\vec{p}' \int d\vec{q}' s^{3N}\delta\left[f(s)\right]
+	Z = \int dp_s \int ds \int d\vec{p'} \int d\vec{q'} s^{3N}\delta\left[f(s)\right]
 \end{equation}
 e lembramos da propriedade do Delta de Dirac que diz
 
@@ -276,24 +277,33 @@ e lembramos da propriedade do Delta de Dirac que diz
 onde $s_0$ é o valor de $s$ que zera $f(s)$ e $f'(s) = \deri{f}{s} = gT/s$. É fácil ver que $f(s)$ tem um único zero, localizado em
 
 \begin{equation}
-	s_0 = \exp\left[-\left( H_0(\vec{p}', \vec{q}') + \frac{p_s^2}{2Q} -E\right)\frac{1}{gT}\right].
+	s_0 = \exp\left[-\left( H_0(\vec{p'}, \vec{q'}) + \frac{p_s^2}{2Q} -E\right)\frac{1}{gT}\right].
 \end{equation}
 
 Quando aplicamos essa propriedade temos então
 
 \begin{align}
-	Z = \frac{1}{gT} \int dp_s & \int ds \int d\vec{p}' \int d\vec{q}' s^{3N+1}  \notag \\ 
-	   \times&\delta\left[s - \exp\left[-\left( H_0(\vec{p}', \vec{q}') + \frac{p_s^2}{2Q} -E\right)\frac{1}{gT}\right]\right].
+	Z = \frac{1}{gT} \int dp_s & \int ds \int d\vec{p'} \int d\vec{q'} s^{3N+1}  \notag \\ 
+	   \times&\delta\left[s - \exp\left[-\left( H_0(\vec{p'}, \vec{q'}) + \frac{p_s^2}{2Q} -E\right)\frac{1}{gT}\right]\right].
 \end{align}
 
 Faremos então a integral em $s$ e dividiremos as integrais em $p_s$ das em $\vec{q}$ e $\vec{p}$.
 
 \begin{align}
 	Z = \frac{1}{gT} \int dp_s \exp\left[-\left( \frac{p_s^2}{2Q} - E\right)\frac{3N+1}{gT}\right] \\
-	\times \int d\vec{p}' \int d\vec{q}' \exp\left[-H_0(\vec{p}', \vec{q}') \frac{3N+1}{gT}\right].
+	\times \int d\vec{p'} \int d\vec{q'} \exp\left[-H_0(\vec{p'}, \vec{q'}) \frac{3N+1}{gT}\right].
 \end{align}
 
-Se escolhermos $g=3N+1$, teremos $Z=C Z_c$, onde $Z_c$ é a função de partição canônica e $C$ independe de $\vec{q}$ e $\vec{p}$, não alterando então mas médias das quantidades calculadas.
+Se escolhermos $g=3N+1$, teremos $Z=C Z_c$, onde $Z_c$ é a função de partição canônica e $C$ independe de $\vec{q}$ e $\vec{p}$, não alterando então as médias das quantidades. Para ver isto, vamos chamar a parte interna, incluindo $C$, de $G$. A partir daí, é só lembrar que elas são calculadas da seguinte maneira:
 
+\begin{align}
+	\left<A\right> =& \frac{ \int d\vec{p'} \int d\vec{q'} G A(\vec{p'}, \vec{q'})} {\int d\vec{p'} \int d\vec{q'}G} \notag \\
+	=& \frac{ \int d\vec{p'} \int d\vec{q'} \frac{1}{gT} C \exp\left[-H_0(\vec{p'}, \vec{q'}) \frac{1}{T}\right] A(\vec{p'}, \vec{q'})}
+	{ \int d\vec{p'} \int d\vec{q'} \frac{1}{gT} C \exp\left[-H_0(\vec{p'}, \vec{q'}) \frac{1}{T}\right]} \notag \\
+	=& \frac{ \int d\vec{p'} \int d\vec{q'} \frac{1}{gT} \exp\left[-H_0(\vec{p'}, \vec{q'}) \frac{1}{T}\right] A(\vec{p'}, \vec{q'})}
+	{ \int d\vec{p'} \int d\vec{q'} \frac{1}{gT} \exp\left[-H_0(\vec{p'}, \vec{q'}) \frac{1}{T}\right]} 
+\end{align}
+
+\section{Ensemble Isobárico-Isoentálpico - NPH}
 
 \end{document}
