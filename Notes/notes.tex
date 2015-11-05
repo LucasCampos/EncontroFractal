@@ -160,7 +160,7 @@ O que nos dá as seguintes equações de movimento
 	\begin{align}
 		\deri{q_i}{t} &= \frac{p_i}{ms^2}\\
 		\deri{s}{t} &= \frac{p_s}{Q}\\
-		\deri{p_i}{t} &= \sum_i \del{\phiij}{q_i} = F_i \\
+		\deri{p_i}{t} &= -\sum_i \del{\phiij}{q_i} = F_i \\
 		\deri{p_s}{t} &= \frac{1}{s} \left[\sum_i \frac{p_i}{ms^2} - gT\right]
 	\end{align}
 \end{subequations}
@@ -306,4 +306,39 @@ Se escolhermos $g=3N+1$, teremos $Z=C Z_c$, onde $Z_c$ é a função de partiç�
 
 \section{Ensemble Isobárico-Isoentálpico - NPH}
 
+Seguiremos um processo parecido com a seção anterior. Vamos fazer uma alteração no sistema, desta vez reescalando o sistema de coordenadas dinâmicamente. Com isso mudaremos o volume do sistema. Então, esse volume entrará como uma variável dinâmica do sistema. As mudanças serão:
+
+\begin{align}
+	q_i =& \rho_i/L \\
+	p_i =& \pi_i/L
+\end{align}
+onde $L = V^(1/3)$. Lembremos que a variável dinâmica é V.
+
+Nosso hamiltoniano será 
+
+\begin{equation}
+	H_{NPH} = \sum_i \frac{\pi_i^2}{2mL^{2/3}} + \sum_{i<j} \phi(L \rho_{ij}) + \frac{p_V^2}{2M} + PV.
+\end{equation}
+
+\subsection{Equação de movimento no espaço virtual}
+
+Aplicando mais uma vez as propriedades do hamiltoniano,
+
+\begin{align}
+	\deri{\rho_i}{t} =& \frac{\pi_i}{mL^2} \\
+	\deri{\pi_i}{t} =& -L \sum_{i<j} \del{\phi(L \rho_ij)}{\rho_i}\\
+	\deri{V}{t} =& \frac{\Pi}{M} \\
+	\deri{\Pi}{t} =& - \frac{1}{3V} \left( \sum_i \frac{\pi_i^2}{mL^2} + L\sum_{i<j} \rho_{ij} \phi(L\rho_{ij}) + 3VQ\right).
+\end{align}
+
+\subsection{Equação de movimeto no espaço real}
+
+Por um processo semelhante ao feito para o NVT, nós podemos encontrar as equações de movimento nas variáveis reais:
+
+\begin{align}
+	\deri{q_i}{t} =& \frac{p_i}{m} - \frac{1}{3}{q_i} \\
+	\deri{p_i}{t} =& f_i +\frac{1}{3}{p_i} \\
+	\deri{V}{t} =& \frac{p_V}{M}\\
+	\deri{p_V}{t} =& \frac{1}{3V}\left(\sum_i \frac{p_i}{m_i} + \sum_{i<j} f_{ij}\cdot r_{ij}\right) - P
+\end{align}
 \end{document}
